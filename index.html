@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blockchain Wallet</title>
+</head>
+<body>
+    <h1>Simple Blockchain Wallet</h1>
+
+    <h2>Create Wallet</h2>
+    <button onclick="createWallet()">Create Wallet</button>
+    <p id="wallet"></p>
+
+    <h2>Send Cryptocurrency</h2>
+    <form id="sendForm">
+        <input type="text" id="sender" placeholder="Sender Address">
+        <input type="text" id="recipient" placeholder="Recipient Address">
+        <input type="number" id="amount" placeholder="Amount">
+        <button type="submit">Send</button>
+    </form>
+    <p id="sendResult"></p>
+
+    <h2>Transactions</h2>
+    <button onclick="getTransactions()">Show Transactions</button>
+    <ul id="transactions"></ul>
+
+    <script>
+        async function createWallet() {
+            const response = await fetch('/wallet/new', {
+                method: 'POST',
+            });
+            const data = await response.json();
+            document.getElementById('wallet').innerText = `Address: ${data.address}, Balance: ${data.balance}`;
+        }
+
+        document.getElementById('sendForm').onsubmit = async function(event) {
+            event.preventDefault();
+            const sender = document.getElementById('sender').value;
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+
+            const response = await fetch('/transaction/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sender, recipient, amount })
+            });
+            const data = await response.json();
+            document.getElementById('sendResult').innerText = data.message || data.error;
+        }
+
+        async function getTransactions() {
+            const response = await fetch('/transactions');
+            const transactions = await response.json();
+            const list = document.getElementById('transactions');
+            list.innerHTML = '';
+            transactions.forEach(tx => {
+                const item = document.createElement('li');
+                item.innerText = `Sender: ${tx.sender}, Recipient: ${tx.recipient}, Amount: ${tx.amount}`;
+                list.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
