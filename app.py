@@ -1,5 +1,5 @@
-from blockchain import Wallet, Transaction
 from flask import Flask, request, jsonify, render_template
+from blockchain import Wallet, Transaction
 
 app = Flask(__name__)
 
@@ -10,7 +10,6 @@ transactions = []
 @app.route('/')
 def index():
     return render_template('index.html')
-
 
 @app.route('/wallet/new', methods=['POST'])
 def new_wallet():
@@ -31,7 +30,10 @@ def send_transaction():
     data = request.get_json()
     sender_address = data['sender']
     recipient_address = data['recipient']
-    amount = data['amount']
+    try:
+        amount = int(data['amount'])
+    except ValueError:
+        return jsonify({'error': 'Invalid amount'}), 400
 
     sender_wallet = wallets.get(sender_address)
     recipient_wallet = wallets.get(recipient_address)
@@ -52,8 +54,6 @@ def send_transaction():
 @app.route('/transactions', methods=['GET'])
 def get_transactions():
     return jsonify([vars(tx) for tx in transactions])
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
